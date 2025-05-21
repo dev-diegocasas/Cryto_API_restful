@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mercado Cripto de Hoy</title>
+  <style>
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:8px; border:1px solid #ddd; text-align:left; }
+    nav {
+      margin-bottom: 20px;
+    }
+    nav a {
+      margin-right: 12px;
+      padding: 6px 12px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    nav a:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV: Enlaces a las tres vistas -->
+  <nav>
+    <a href="/market/?vs={{ vs }}&limit={{ coins|length }}">🌐 Mercado</a>
+    <a href="/wallet/?vs={{ vs }}&limit={{ coins|length }}">💼  Simula tu inversion</a>
+    <a href="/investments/view">📊 Mis inversiones</a>
+  </nav>
+
+  <h1>Mercado Cripto (vs {{ vs | upper }})</h1>
+  <form method="get">
+    <label>Moneda fiat:
+      <select name="vs">
+        <option value="usd" {% if vs=="usd" %}selected{% endif %}>USD</option>
+        <option value="eur" {% if vs=="eur" %}selected{% endif %}>EUR</option>
+      </select>
+    </label>
+    <label>Límite:
+      <input type="number" name="limit" value="{{ coins|length }}" min="1" max="100"/>
+    </label>
+    <button>Filtrar</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Nombre</th><th>Símbolo</th><th>Precio</th><th>MarketCap</th>
+        <th>Volumen 24h</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for c in coins %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.symbol | upper }}</td>
+        <td>{{ c.current_price }}</td>
+        <td>{{ c.market_cap }}</td>
+        <td>{{ c.total_volume }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

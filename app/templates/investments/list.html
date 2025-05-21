@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Inversiones</title>
+  <style>
+    nav {
+      margin-bottom: 20px;
+    }
+    nav a {
+      margin-right: 12px;
+      padding: 6px 12px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    nav a:hover {
+      background: #45a049;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      text-align: center;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    a.button, button {
+      padding: 6px 12px;
+      margin: 0 4px;
+      background: #2196F3;
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    a.button:hover, button:hover {
+      background: #1976D2;
+    }
+    button.delete {
+      background: #f44336;
+    }
+    button.delete:hover {
+      background: #d32f2f;
+    }
+
+    form.inline { display: inline; }
+  </style>
+</head>
+<body>
+  <!-- NAV: Enlaces a Mercado y Mi Billetera -->
+  <nav>
+    <a href="/market/?vs=usd&limit=20">🌐 Mercado</a>
+    <a href="/wallet/?vs=usd&limit=20">💼 Simula tu inversion</a>
+    <a href="/investments/view">📊 Mis inversiones</a>
+  </nav>
+
+  <h1>Inversiones Guardadas</h1>
+  <p>
+    <a href="/investments/create" class="button">➕ Nueva Inversión</a>
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cripto (símbolo)</th>
+        <th>Monto USD</th>
+        <th>Precio USD</th>
+        <th>Cantidad (qty)</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if investments and investments|length > 0 %}
+        {% for inv in investments %}
+          <tr>
+            <td style="font-size: 0.9em; word-break: break-all;">{{ inv.id }}</td>
+            <td style="text-transform: uppercase;">{{ inv.symbol }}</td>
+            <td>{{ "%.2f"|format(inv.amount_usd) }}</td>
+            <td>{{ "%.2f"|format(inv.price_usd) }}</td>
+            <td>{{ "%.6f"|format(inv.qty) }}</td>
+            <td>
+              <a href="/investments/{{ inv.id }}/edit" class="button">✏️ Editar</a>
+              <form action="/investments/{{ inv.id }}/delete" method="post" class="inline"
+                    onsubmit="return confirm('¿Seguro que deseas eliminar esta inversión?');">
+                <button type="submit" class="delete">🗑️ Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="6">No hay inversiones registradas.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</body>
+</html>

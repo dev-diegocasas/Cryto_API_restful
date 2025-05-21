@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulacion Cripto</title>
+  <style>
+    nav {
+      margin-bottom: 20px;
+    }
+    nav a {
+      margin-right: 12px;
+      padding: 6px 12px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    nav a:hover {
+      background: #45a049;
+    }
+    form {
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="number"] {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100px;
+    }
+    button {
+      padding: 6px 12px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    .resultado {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV: Enlaces a las tres vistas -->
+  <nav>
+    <a href="/market/?vs={{ vs }}&limit={{ coins|length }}">🌐 Mercado</a>
+    <a href="/wallet/?vs={{ vs }}&limit={{ coins|length }}">💼  Simula tu inversion</a>
+    <a href="/investments/view">📊 Mis inversiones</a>
+  </nav>
+
+  <h1>Simulador de Inversión</h1>
+
+  <form action="/wallet/" method="post">
+    <label>Elige Cripto:
+      <select name="symbol">
+        {% for c in coins %}
+          <option value="{{ c.symbol }}">{{ c.name }} ({{ c.symbol | upper }})</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Cantidad a invertir ({{ vs | upper }}): 
+      <input type="number" step="0.0001" name="amount" required/>
+    </label>
+
+    <button>Simular</button>
+  </form>
+
+  {% if result %}
+    <div class="resultado">
+      <h2>Resultado</h2>
+      <p>Invertiste <strong>{{ result.amount }} {{ vs | upper }}</strong> en <strong>{{ result.symbol | upper }}</strong>.</p>
+      <p>Al precio de <strong>{{ result.price }}</strong>, obtendrías <strong>{{ result.crypto_qty }}</strong> <strong>{{ result.symbol | upper }}</strong>.</p>
+    </div>
+  {% endif %}
+</body>
+</html>
