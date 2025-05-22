@@ -3,7 +3,7 @@ services:
     name: fastapi-investments
     runtime: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    startCommand: "gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
