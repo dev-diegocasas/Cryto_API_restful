@@ -1,66 +1,48 @@
-# app/crud/investment.py
-
 from bson import ObjectId
 from pymongo.collection import Collection
-from app.schemas.investment import InvestmentCreate, InvestmentInDB
-from pymongo.errors import PyMongoError
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from app.schemas.investment import (
+    InvestmentCreate, InvestmentUpdate, InvestmentInDB
+)
+from app.services.coingecko import fetch_top_coins
 
-def create_investment(
+
+async def create_investment(
     col: Collection,
-    inv: InvestmentCreate,
-    price_usd: float,
-    qty: float
+    inv: InvestmentCreate
 ) -> InvestmentInDB:
-    """
-    Inserta una nueva inversión y devuelve InvestmentInDB.
-    """
+    # Obtener precio actual
+    coins = await fetch_top_coins(per_page=100)
+    coin = next((c for c in coins if c["symbol"] == inv.symbol.lower()), None)
+    if not coin:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Cripto {inv.symbol} no encontrada")
+    price = coin["current_price"]
+    qty = inv.amount_usd / price
+
+    # Insertar en MongoDB
     doc = inv.dict()
-    doc.update({
-        "price_usd": price_usd,
-        "qty": qty
-    })
-    try:
-        res = col.insert_one(doc)
-    except PyMongoError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al guardar en MongoDB: {e}"
-        )
+    doc.update({"price_usd": price, "qty": qty})
+    res = col.insert_one(doc)
+
+    # Construir respuesta explícita (evitar pasar _id en doc)
     return InvestmentInDB(
         id=str(res.inserted_id),
-        **inv.dict(),
-        price_usd=price_usd,
+        symbol=inv.symbol,
+        amount_usd=inv.amount_usd,
+        price_usd=price,
         qty=qty
     )
 
-def get_all_investments(col: Collection) -> list[InvestmentInDB]:
-    """
-    Devuelve una lista de todas las inversiones en la colección.
-    """
-    out: list[InvestmentInDB] = []
-    for d in col.find():
-        out.append(InvestmentInDB(
-            id=str(d["_id"]),
-            symbol=d["symbol"],
-            amount_usd=d["amount_usd"],
-            price_usd=d["price_usd"],
-            qty=d["qty"]
-        ))
-    return out
 
-def get_investment(col: Collection, id: str) -> InvestmentInDB | None:
-    """
-    Busca una inversión por su ID. Si no existe o el ID es inválido, devuelve None.
-    """
-    try:
-        oid = ObjectId(id)
-    except Exception:
-        return None
-
-    d = col.find_one({"_id": oid})
+def get_investment(
+    col: Collection,
+    investment_id: str
+) -> InvestmentInDB:
+    d = col.find_one({"_id": ObjectId(investment_id)})
     if not d:
-        return None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Inversión no encontrada")
     return InvestmentInDB(
         id=str(d["_id"]),
         symbol=d["symbol"],
@@ -69,48 +51,43 @@ def get_investment(col: Collection, id: str) -> InvestmentInDB | None:
         qty=d["qty"]
     )
 
-def update_investment(
+
+async def update_investment(
     col: Collection,
-    id: str,
-    symbol: str,
-    amount_usd: float,
-    price_usd: float,
-    qty: float
+    investment_id: str,
+    inv_upd: InvestmentUpdate
 ) -> InvestmentInDB:
-    """
-    Actualiza una inversión existente. Lanza HTTPException(404) si no la encuentra.
-    """
-    try:
-        oid = ObjectId(id)
-    except Exception:
-        raise HTTPException(status_code=404, detail="ID inválido")
+    # Fetch existing
+    inv = get_investment(col, investment_id)
+    # Calcular nuevo quantity
+    new_amount = inv_upd.amount_usd if inv_upd.amount_usd is not None else inv.amount_usd
+    # Reobtener precio actual
+    coins = await fetch_top_coins(per_page=100)
+    coin = next((c for c in coins if c["symbol"] == inv.symbol.lower()), None)
+    price = coin["current_price"] if coin else inv.price_usd
+    new_qty = new_amount / price
 
-    result = col.update_one(
-        {"_id": oid},
-        {"$set": {
-            "symbol": symbol,
-            "amount_usd": amount_usd,
-            "price_usd": price_usd,
-            "qty": qty
-        }}
+    update_fields = {"amount_usd": new_amount, "price_usd": price, "qty": new_qty}
+    d = col.find_one_and_update(
+        {"_id": ObjectId(investment_id)},
+        {"$set": update_fields},
+        return_document=True
     )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Inversión no encontrada")
-
+    if not d:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Inversión no encontrada")
     return InvestmentInDB(
-        id=id,
-        symbol=symbol,
-        amount_usd=amount_usd,
-        price_usd=price_usd,
-        qty=qty
+        id=str(d["_id"]),
+        **update_fields | {"symbol": d["symbol"]}
     )
 
-def delete_investment(col: Collection, id: str):
-    """
-    Borra una inversión. No lanza error si no existe.
-    """
-    try:
-        oid = ObjectId(id)
-    except Exception:
-        return
-    col.delete_one({"_id": oid})
+
+def delete_investment(
+    col: Collection,
+    investment_id: str
+) -> dict:
+    res = col.delete_one({"_id": ObjectId(investment_id)})
+    if res.deleted_count != 1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Inversión no encontrada")
+    return {"ok": True}

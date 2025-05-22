@@ -4,65 +4,22 @@
   <meta charset="UTF-8" />
   <title>{{ action }} Inversión</title>
   <style>
-    nav {
-      margin-bottom: 20px;
-    }
-    nav a {
-      margin-right: 12px;
-      padding: 6px 12px;
-      background: #4CAF50;
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-    nav a:hover {
-      background: #45a049;
-    }
-
-    form {
-      max-width: 400px;
-      margin: 20px auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    label {
-      display: flex;
-      flex-direction: column;
-      font-weight: bold;
-    }
-    input[type="text"],
-    input[type="number"] {
-      padding: 6px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1em;
-    }
-    button {
-      padding: 8px 12px;
-      background: #2196F3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1em;
-      align-self: flex-start;
-    }
-    button:hover {
-      background: #1976D2;
-    }
-    .center {
-      text-align: center;
-    }
+    nav { margin-bottom: 20px; }
+    nav a { margin-right: 12px; padding: 6px 12px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
+    nav a:hover { background: #45a049; }
+    form { max-width: 400px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
+    label { display: flex; flex-direction: column; font-weight: bold; }
+    input, select { padding: 6px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+    button { padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+    button:hover { background: #1976D2; }
+    .center { text-align: center; }
   </style>
 </head>
 <body>
-  <!-- NAV: Enlaces a Mercado, Billetera y Gestión -->
   <nav>
     <a href="/market/?vs=usd&limit=20">🌐 Mercado</a>
-    <a href="/wallet/?vs=usd&limit=20">💼 Simula tu inversion</a>
-    <a href="/investments/view">📊 Mis inversiones</a>
+    <a href="/wallet/?vs=usd&limit=20">💼 Simula tu inversión</a>
+    <a href="/investments/">📊 Mis inversiones</a>
   </nav>
 
   <h1 class="center">{{ action }} Inversión</h1>
@@ -100,7 +57,7 @@
   </form>
 
   <p class="center">
-    <a href="/investments/view">⬅️ Volver al listado de Inversiones</a>
+    <a href="/investments/">⬅️ Volver al listado de Inversiones</a>
   </p>
 </body>
 </html>
