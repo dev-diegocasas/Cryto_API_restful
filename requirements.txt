@@ -1,9 +1,10 @@
 fastapi
-uvicorn[standard]
-pymongo
+gunicorn
 httpx
 Jinja2
+pymongo
 python-dotenv
+python-multipart
 pydantic-settings
-gunicorn
+uvicorn[standard]
 
